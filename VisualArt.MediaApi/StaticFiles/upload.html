@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+
+    <style>
+        body, button {
+            font-family: "Segoe UI","Segoe UI Web (West European)";
+        }
+        .drop-zone {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="uploadForm" enctype="multipart/form-data" method="post" action="/api/media">
+        <div class="drop-zone" id="dropZone">
+            <p>Drag & Drop files here or click to select</p>
+            <input type="file" id="fileInput" name="files[]" multiple>
+        </div>
+        <ul id="fileList"></ul>
+        <button style="font-family: 'Segoe UI'" type="submit">Upload Files</button>
+    </form>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+
+        // Prevent default behavior for drag-and-drop events
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+
+            // Combine the existing files and dropped files
+            const allFiles = Array.from(fileInput.files).concat(Array.from(e.dataTransfer.files));
+
+            // Update the file input with the combined files
+            fileInput.files = e.dataTransfer.files;
+
+            // Clear the previous file list
+            fileList.innerHTML = '';
+
+            updateList(allFiles);
+        });
+
+        // Handle file selection from the input element
+        fileInput.addEventListener('change', () => {
+
+            updateList(fileInput.files);
+
+            // You can also handle file uploads here using AJAX or fetch.
+        });
+
+        function updateList(files) {
+            for (let i = 0; i < files.length; i++) {
+                const listItem = document.createElement('li');
+                listItem.textContent = files[i].name;
+                fileList.appendChild(listItem);
+            }
+        }
+    </script>
+</body>
+</html>

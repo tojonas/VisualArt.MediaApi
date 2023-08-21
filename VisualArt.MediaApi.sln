@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VisualArt.MediaApi", "VisualArt.MediaApi\VisualArt.MediaApi.csproj", "{F0F57F75-EC97-40D0-810C-9A86DBCC75D4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VisualArt.Media", "VisualArt.Media\VisualArt.Media.csproj", "{7D179CE1-B43C-4CF0-9DA7-C2372070C668}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VisualArt.Media.IntegrationTest", "VisualArt.Media.IntegrationTest\VisualArt.Media.IntegrationTest.csproj", "{0E017D29-67E6-4BB3-8061-7BD278271F7B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F0F57F75-EC97-40D0-810C-9A86DBCC75D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0F57F75-EC97-40D0-810C-9A86DBCC75D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0F57F75-EC97-40D0-810C-9A86DBCC75D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0F57F75-EC97-40D0-810C-9A86DBCC75D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D179CE1-B43C-4CF0-9DA7-C2372070C668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D179CE1-B43C-4CF0-9DA7-C2372070C668}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D179CE1-B43C-4CF0-9DA7-C2372070C668}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D179CE1-B43C-4CF0-9DA7-C2372070C668}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E017D29-67E6-4BB3-8061-7BD278271F7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E017D29-67E6-4BB3-8061-7BD278271F7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E017D29-67E6-4BB3-8061-7BD278271F7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E017D29-67E6-4BB3-8061-7BD278271F7B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7F033BB6-5A63-43C4-AE34-A7F50DCC59F3}
+	EndGlobalSection
+EndGlobal
