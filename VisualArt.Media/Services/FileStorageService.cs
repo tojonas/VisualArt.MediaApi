@@ -57,7 +57,7 @@ namespace VisualArt.Media.Services
             if (stream.Length > MaxFileSize)
             {
                 // Not the best way to handle this, but it works for now
-                return new FileMetadata(fileName, 0, DateTime.MinValue, DateTime.MinValue);
+                return new FileMetadata(fileName, -1, DateTime.MinValue, DateTime.MinValue);
             }
             var safeFilename = ValidateName(fileName);
             var storagePath = Path.Combine(_rootPath, safeFilename);

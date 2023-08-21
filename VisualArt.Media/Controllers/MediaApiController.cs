@@ -33,7 +33,7 @@ namespace VisualArt.Media.Controllers
                 using (var stream = file.OpenReadStream())
                 {
                     var result = await _fileStorage.SaveFileAsync(file.FileName, stream);
-                    if( result.Length != 0)
+                    if( result.Length != -1)
                     {
                         yield return result;
                     }
