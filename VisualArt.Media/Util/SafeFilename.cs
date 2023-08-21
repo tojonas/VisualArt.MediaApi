@@ -13,5 +13,6 @@ namespace VisualArt.Media.Util
         {
             return removeInvalidChars.Replace(fileName, replacement);
         }
+
     }
 }

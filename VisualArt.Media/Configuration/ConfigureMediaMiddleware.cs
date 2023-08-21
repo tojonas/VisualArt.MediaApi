@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using VisualArt.Media.Controllers;
+using VisualArt.Media.Exceptions;
 using VisualArt.Media.Services;
 
 namespace VisualArt.Media.Configuration

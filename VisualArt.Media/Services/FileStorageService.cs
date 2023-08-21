@@ -11,7 +11,7 @@ namespace VisualArt.Media.Services
         private const string HashesFolder = ".hashes";
         private readonly string _rootPath;
         private readonly ILogger _logger;
-        private Options _options = new();
+        private readonly Options _options = new();
         public long MaxFileSize => _options.MaxFileSize;
 
         public FileStorageService(ILogger<FileStorageService> logger, IOptions<Options> options)
@@ -22,26 +22,34 @@ namespace VisualArt.Media.Services
             _rootPath = _options.ExpandedRootPath;
 
             _logger.LogInformation($"RootPath: [{_rootPath}] MaxFileSize: [{MaxFileSize}]");
-            EnsureDirectories();
+            EnsureDirectories(_rootPath);
         }
-        void EnsureDirectories()
+        string EnsureDirectories( string folder )
         {
-            if (!Directory.Exists(_rootPath))
+            if (!Directory.Exists(folder))
             {
-                Directory.CreateDirectory(_rootPath);
-                _logger.LogInformation($"Created RootPath: [{_rootPath}]");
+                Directory.CreateDirectory(folder);
+                _logger.LogInformation($"Created RootPath: [{folder}]");
             }
-            var hashes = Path.Combine(_rootPath, HashesFolder);
+            var hashes = Path.Combine(folder, HashesFolder);
             if (!Directory.Exists(hashes))
             {
                 Directory.CreateDirectory(hashes);
                 _logger.LogInformation($"Created HashesFolder: [{hashes}]");
             }
+            return folder;
         }
-        public IEnumerable<FileMetadata> ListFiles()
+        public IEnumerable<FileMetadata> ListFiles(string path)
         {
-            var di = new DirectoryInfo(_rootPath);
-            return di.GetFiles().Select(fi => CreateMetadata(fi));
+            var safePath = ValidatePath(path);
+            var di = new DirectoryInfo(Path.Combine(_rootPath, safePath));
+            if( di.Exists == false)
+            {
+                return Enumerable.Empty<FileMetadata>();
+            }
+            return di.GetDirectories().Where(d=>d.Name != HashesFolder)
+                .Select( d=>CreateMetadata(d))
+                .Concat(di.GetFiles().Select(fi => CreateMetadata(fi)));
         }
 
         public bool FileExistsInStore(string path, string hash)
@@ -49,7 +57,7 @@ namespace VisualArt.Media.Services
             return File.Exists(path) && hash == File.ReadAllText(path);
         }
 
-        public async Task<FileMetadata> SaveFileAsync(string fileName, Stream stream)
+        public async Task<FileMetadata> SaveFileAsync(string path, string fileName, Stream stream)
         {
             _ = fileName ?? throw new ArgumentNullException(nameof(fileName));
             _ = stream ?? throw new ArgumentNullException(nameof(stream));
@@ -57,13 +65,19 @@ namespace VisualArt.Media.Services
             if (stream.Length > MaxFileSize)
             {
                 // Not the best way to handle this, but it works for now
-                return new FileMetadata(fileName, -1, DateTime.MinValue, DateTime.MinValue);
+                return new FileMetadata(fileName, -1, false, DateTime.MinValue, DateTime.MinValue);
             }
+            if( _options.BlockedExtensions.Contains(Path.GetExtension(fileName).ToLower()))
+            {
+                throw new ArgumentException($"File extension [{Path.GetExtension(fileName)}] is not allowed");
+            }
+            var saveDirectory = EnsureDirectories(Path.Combine(_rootPath, ValidatePath(path)));
+
             var safeFilename = ValidateName(fileName);
-            var storagePath = Path.Combine(_rootPath, safeFilename);
+            var storagePath = Path.Combine(saveDirectory, safeFilename);
 
             var hash = CalculateHash(stream);
-            var hashPath = Path.Combine(_rootPath, HashesFolder, safeFilename);
+            var hashPath = Path.Combine(saveDirectory, HashesFolder, safeFilename);
 
             if (FileExistsInStore(hashPath, hash))
             {
@@ -97,6 +111,30 @@ namespace VisualArt.Media.Services
             return CreateMetadata(storagePath);
         }
 
+        public string ValidatePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return string.Empty;
+            }
+            if (path.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+            {
+                throw new ArgumentException($"Invalid path: {path}");
+            }
+            var parts = new List<string>(path.Split("/"));
+            if (parts.Count > _options.MaxFolderDepth)
+            {
+                throw new ArgumentException($"Invalid path: {path}");
+            }
+            foreach (var part in parts)
+            {
+                if (part == HashesFolder || string.IsNullOrWhiteSpace(part) || part == "." || part == "..")
+                {
+                    throw new ArgumentException($"Invalid path: {path}");
+                }
+            }
+            return Path.Combine(parts.ToArray());
+        }
         public string ValidateName(string fileName)
         {
             if (fileName == HashesFolder || string.IsNullOrWhiteSpace(fileName))
@@ -112,9 +150,12 @@ namespace VisualArt.Media.Services
         }
         FileMetadata CreateMetadata(FileInfo fi)
         {
-            return new FileMetadata(fi.Name, fi.Length, File.GetCreationTimeUtc(fi.FullName), File.GetLastWriteTimeUtc(fi.FullName));
+            return new FileMetadata(fi.Name, fi.Length, false, File.GetCreationTimeUtc(fi.FullName), File.GetLastWriteTimeUtc(fi.FullName));
         }
-
+        FileMetadata CreateMetadata(DirectoryInfo di)
+        {
+            return new FileMetadata(di.Name, 0, true, File.GetCreationTimeUtc(di.FullName), File.GetLastWriteTimeUtc(di.FullName));
+        }
         public static string CalculateHash(Stream stream)
         {
             using (SHA1 sha1 = SHA1.Create())
@@ -129,13 +170,15 @@ namespace VisualArt.Media.Services
         {
             _logger.LogInformation($"Dropping Storage: {_rootPath}");
             Directory.Delete(_rootPath, true);
-            EnsureDirectories();
+            EnsureDirectories(_rootPath);
         }
         public class Options
         {
             public const string SectionName = "FileStorage";
             public string RootPath { get; set; } = Path.Combine(Path.GetTempPath(), "VisualArt.Media");
             public long MaxFileSize { get; set; } = 500 * 1024 * 1024;
+            public long MaxFolderDepth { get; set; } = 16;
+            public HashSet<string> BlockedExtensions { get; set; } = new();
             public string ExpandedRootPath => Environment.ExpandEnvironmentVariables(RootPath);
         }
     }

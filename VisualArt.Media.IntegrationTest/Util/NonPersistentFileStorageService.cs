@@ -22,14 +22,14 @@ namespace VisualArt.Media.IntegrationTest.Util
         {
         }
 
-        public IEnumerable<FileMetadata> ListFiles()
+        public IEnumerable<FileMetadata> ListFiles(string path)
         {
-            return _service.ListFiles();
+            return _service.ListFiles(path);
         }
 
-        public Task<FileMetadata> SaveFileAsync(string fileName, Stream stream)
+        public Task<FileMetadata> SaveFileAsync(string path, string fileName, Stream stream)
         {
-            return _service.SaveFileAsync(fileName, stream);
+            return _service.SaveFileAsync(path, fileName, stream);
         }
     }
 }
