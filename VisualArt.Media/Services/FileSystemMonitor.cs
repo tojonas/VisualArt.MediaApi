@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace VisualArt.Media.Services
 {
-    public class FileSystemMonitor : BackgroundService, IDisposable
+    public class FileSystemMonitor : BackgroundService
     {
         private readonly ILogger _logger;
         private readonly FileStorageService.Options _options;
