@@ -67,10 +67,8 @@ namespace VisualArt.Media.Services
                 // Not the best way to handle this, but it works for now
                 return new FileMetadata(fileName, -1, false, DateTime.MinValue, DateTime.MinValue);
             }
-            if( _options.BlockedExtensions.Contains(Path.GetExtension(fileName).ToLower()))
-            {
-                throw new ArgumentException($"File extension [{Path.GetExtension(fileName)}] is not allowed");
-            }
+            EnsureValidFileType(Path.GetExtension(fileName));
+
             var saveDirectory = EnsureDirectories(Path.Combine(_rootPath, ValidatePath(path)));
 
             var safeFilename = ValidateName(fileName);
@@ -110,7 +108,13 @@ namespace VisualArt.Media.Services
             }
             return CreateMetadata(storagePath);
         }
-
+        void EnsureValidFileType( string extension )
+        {
+            if (_options.BlockedExtensions.Contains(extension.ToLower()))
+            {
+                throw new ArgumentException($"File extension [{extension}] is not allowed");
+            }
+        }
         public string ValidatePath(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
