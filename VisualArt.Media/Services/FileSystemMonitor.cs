@@ -7,15 +7,17 @@ namespace VisualArt.Media.Services
     public class FileSystemMonitor : BackgroundService, IDisposable
     {
         private readonly ILogger _logger;
-        private readonly Options _options;
+        private readonly FileStorageService.Options _options;
         FileSystemWatcher _monitor;
 
-        public FileSystemMonitor(ILogger<FileSystemMonitor> logger, IOptions<Options> options)
+        public FileSystemMonitor(ILogger<FileSystemMonitor> logger, IOptions<FileStorageService.Options> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options.Value ?? throw new ArgumentNullException(nameof(options));
 
-            var rootPath = Environment.ExpandEnvironmentVariables(_options.RootPath);
+            // There is a dependency on FileStorageService to ensure the root path exists.
+            // For now, we'll just use the same path and ensure it exists.
+            var rootPath = _options.ExpandedRootPath;
             EnsureDirectories(rootPath);
             _monitor = new FileSystemWatcher(rootPath);
 
@@ -76,12 +78,6 @@ namespace VisualArt.Media.Services
         {
             base.Dispose();
             _monitor.Dispose();
-        }
-
-        public class Options
-        {
-            public const string SectionName = "FileSystemMonitor";
-            public string RootPath { get; set; } = Path.Combine(Path.GetTempPath(), "VisualArt.Media");
         }
     }
 }

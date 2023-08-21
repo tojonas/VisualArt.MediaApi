@@ -19,7 +19,7 @@ namespace VisualArt.Media.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options.Value ?? throw new ArgumentNullException(nameof(options));
 
-            _rootPath = Environment.ExpandEnvironmentVariables(_options.RootPath);
+            _rootPath = _options.ExpandedRootPath;
 
             _logger.LogInformation($"RootPath: [{_rootPath}] MaxFileSize: [{MaxFileSize}]");
             EnsureDirectories();
@@ -136,6 +136,7 @@ namespace VisualArt.Media.Services
             public const string SectionName = "FileStorage";
             public string RootPath { get; set; } = Path.Combine(Path.GetTempPath(), "VisualArt.Media");
             public long MaxFileSize { get; set; } = 500 * 1024 * 1024;
+            public string ExpandedRootPath => Environment.ExpandEnvironmentVariables(RootPath);
         }
     }
 }
