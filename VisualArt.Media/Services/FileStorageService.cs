@@ -20,7 +20,7 @@ namespace VisualArt.Media.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options.Value ?? throw new ArgumentNullException(nameof(options));
 
-            _pathUtil = new PathUtil(new[] { HashesFolder }, _options.MaxFolderDepth);
+            _pathUtil = new PathUtil(_options.MaxFolderDepth, HashesFolder);
             _logger.LogInformation($"RootPath: [{RootPath}] MaxFileSize: [{MaxFileSize}]");
             EnsureDirectories(RootPath);
         }
@@ -139,7 +139,7 @@ namespace VisualArt.Media.Services
         {
             public const string SectionName = "FileStorage";
             private string _rootPath = Path.Combine(Path.GetTempPath(), "VisualArt.Media");
-            
+
             public string RootPath
             {
                 get { return _rootPath; }

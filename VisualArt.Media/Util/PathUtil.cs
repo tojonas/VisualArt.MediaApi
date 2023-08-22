@@ -10,7 +10,7 @@
         {
 
         }
-        public PathUtil(IEnumerable<string> reservedNames, uint maxDepth)
+        public PathUtil(uint maxDepth, params string[] reservedNames)
         {
             _reservedNames = _reservedNames.Concat(reservedNames).ToHashSet();
             _maxDepth = maxDepth;
