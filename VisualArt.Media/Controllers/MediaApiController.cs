@@ -23,7 +23,7 @@ namespace VisualArt.Media.Controllers
             return _fileStorage.ListFiles(decodedPath).Skip((int)start).Take((int)count);
         }
 
-        public async IAsyncEnumerable<FileMetadata> UploadFiles(string path, IFormFileCollection files)
+        public async IAsyncEnumerable<FileMetadata> UploadFilesAsync(string path, IFormFileCollection files)
         {
             var decodedPath = WebUtility.UrlDecode(path);
             foreach (var file in files)

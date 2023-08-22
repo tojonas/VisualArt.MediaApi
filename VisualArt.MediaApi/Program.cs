@@ -48,7 +48,7 @@ namespace VisualArt.MediaApi
 
             app.MapPost("/api/media/{*path}",
                 ([FromServices] MediaApiController mediaController, string? path, IFormFileCollection files) =>
-                    mediaController.UploadFiles(path ?? "", files));
+                    mediaController.UploadFilesAsync(path ?? "", files));
 
             app.MapGet("/api/media/metadata/{*path}",
                 ([FromServices] MediaApiController mediaController, string? path, uint? start, uint? count) =>
