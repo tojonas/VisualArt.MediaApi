@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using System.Net;
 using VisualArt.Media.Dto;
-using VisualArt.Media.Exceptions;
 using VisualArt.Media.Services;
 
 namespace VisualArt.Media.Controllers

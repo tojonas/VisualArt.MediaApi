@@ -49,8 +49,8 @@ namespace VisualArt.Media.Services
                 return Enumerable.Empty<FileMetadata>();
             }
             return di.GetDirectories().Where(d=>d.Name != HashesFolder)
-                .Select( d=>CreateMetadata(d))
-                .Concat(di.GetFiles().Select(fi => CreateMetadata(fi)));
+                .Select( d=> FileMetadata.Create(d))
+                .Concat(di.GetFiles().Select(fi => FileMetadata.Create(fi)));
         }
 
         public bool FileExistsInStore(string path, string hash)
@@ -107,7 +107,7 @@ namespace VisualArt.Media.Services
                     throw;
                 }
             }
-            return CreateMetadata(storagePath);
+            return FileMetadata.Create(storagePath);
         }
         void EnsureValidFileType( string extension )
         {
@@ -153,18 +153,7 @@ namespace VisualArt.Media.Services
             return SafeFileName.MakeSafe(fileName);
         }
 
-        FileMetadata CreateMetadata(string path)
-        {
-            return CreateMetadata(new FileInfo(path));
-        }
-        FileMetadata CreateMetadata(FileInfo fi)
-        {
-            return new FileMetadata(fi.Name, fi.Length, false, File.GetCreationTimeUtc(fi.FullName), File.GetLastWriteTimeUtc(fi.FullName));
-        }
-        FileMetadata CreateMetadata(DirectoryInfo di)
-        {
-            return new FileMetadata(di.Name, 0, true, File.GetCreationTimeUtc(di.FullName), File.GetLastWriteTimeUtc(di.FullName));
-        }
+
         public static string CalculateHash(Stream stream)
         {
             using (SHA1 sha1 = SHA1.Create())
