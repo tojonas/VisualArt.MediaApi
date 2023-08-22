@@ -9,7 +9,7 @@ namespace VisualArt.Media.Services
 {
     public class FileStorageService : IFileStorage
     {
-        char[] _invalidChars = new List<char>(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())).ToArray();
+        private readonly char[] _invalidChars = new List<char>(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())).ToArray();
 
         private const string HashesFolder = ".hashes";
         private readonly string _rootPath;
