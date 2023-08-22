@@ -1,12 +1,10 @@
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using VisualArt.Media.Configuration;
 using VisualArt.Media.Controllers;
-using VisualArt.Media.Exceptions;
 
 namespace VisualArt.MediaApi
 {
@@ -23,7 +21,10 @@ namespace VisualArt.MediaApi
             });
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.OperationFilter<MakeRouteParameterOptional>("path");
+            });
             builder.Services.AddMediaServices(builder.Configuration);
             var app = builder.Build();
 
@@ -45,15 +46,34 @@ namespace VisualArt.MediaApi
                 EnableDefaultFiles = true
             });
 
-            app.MapPost("/api/media/{*path}", 
-                ([FromServices] MediaApiController mediaController, string? path, IFormFileCollection files) => 
-                    mediaController.UploadFiles(path ?? "",files));
+            app.MapPost("/api/media/{*path}",
+                ([FromServices] MediaApiController mediaController, string? path, IFormFileCollection files) =>
+                    mediaController.UploadFiles(path ?? "", files));
 
-            app.MapGet("/api/media/metadata/{*path}", 
-                ([FromServices] MediaApiController mediaController, string? path, uint? start, uint? count) => 
+            app.MapGet("/api/media/metadata/{*path}",
+                ([FromServices] MediaApiController mediaController, string? path, uint? start, uint? count) =>
                     mediaController.ListFiles(path ?? "", start ?? 0, count ?? int.MaxValue));
 
             app.Run();
+        }
+    }
+
+    public class MakeRouteParameterOptional : IOperationFilter
+    {
+        readonly string _name;
+        public MakeRouteParameterOptional(string name)
+        {
+            _name = name;
+        }
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            var parameter = operation.Parameters.FirstOrDefault(p => p.Name == _name);
+            if (parameter != null)
+            {
+                parameter.AllowEmptyValue = true;
+                parameter.Required = false;
+                parameter.Description = "Must check \"Send empty value\" or Swagger passes a comma for empty values";
+            }
         }
     }
 }
