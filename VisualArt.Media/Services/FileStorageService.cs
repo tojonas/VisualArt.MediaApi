@@ -137,8 +137,9 @@ namespace VisualArt.Media.Services
         }
         public class Options
         {
-            private string _rootPath = Path.Combine(Path.GetTempPath(), "VisualArt.Media");
             public const string SectionName = "FileStorage";
+            private string _rootPath = Path.Combine(Path.GetTempPath(), "VisualArt.Media");
+            
             public string RootPath
             {
                 get { return _rootPath; }

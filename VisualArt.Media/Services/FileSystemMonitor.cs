@@ -1,25 +1,24 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static VisualArt.Media.Services.FileStorageService;
 
 namespace VisualArt.Media.Services
 {
     public class FileSystemMonitor : BackgroundService
     {
         private readonly ILogger _logger;
-        private readonly FileStorageService.Options _options;
         private readonly FileSystemWatcher _monitor;
 
         public FileSystemMonitor(ILogger<FileSystemMonitor> logger, IOptions<FileStorageService.Options> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _options = options.Value ?? throw new ArgumentNullException(nameof(options));
+            _ = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
             // There is a dependency on FileStorageService to ensure the root path exists.
             // For now, we'll just use the same path and ensure it exists.
-            var rootPath = _options.RootPath;
-            EnsureDirectories(rootPath);
-            _monitor = new(rootPath)
+            EnsureDirectories(options.Value.RootPath);
+            _monitor = new(options.Value.RootPath)
             {
                 NotifyFilter = NotifyFilters.Attributes
                                  | NotifyFilters.CreationTime
