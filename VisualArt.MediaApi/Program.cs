@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
 using VisualArt.Media.Configuration;
 using VisualArt.Media.Controllers;
+using VisualArt.Media.Exceptions;
 
 namespace VisualArt.MediaApi
 {
@@ -23,6 +27,8 @@ namespace VisualArt.MediaApi
             builder.Services.AddMediaServices(builder.Configuration);
             var app = builder.Build();
 
+            app.ConfigureMediaServicesExceptionHandler();
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -39,8 +45,13 @@ namespace VisualArt.MediaApi
                 EnableDefaultFiles = true
             });
 
-            app.MapPost("/api/media", ([FromServices] MediaApiController mediaController, IFormFileCollection files) => mediaController.UploadFiles(files));
-            app.MapGet("/api/media/metadata", ([FromServices] MediaApiController mediaController, uint? start, uint? count) => mediaController.ListFiles(start, count));
+            app.MapPost("/api/media/{*path}", 
+                ([FromServices] MediaApiController mediaController, string? path, IFormFileCollection files) => 
+                    mediaController.UploadFiles(path ?? "",files));
+
+            app.MapGet("/api/media/metadata/{*path}", 
+                ([FromServices] MediaApiController mediaController, string? path, uint? start, uint? count) => 
+                    mediaController.ListFiles(path ?? "", start, count));
 
             app.Run();
         }
