@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.IO;
 using System.Security.Cryptography;
 using VisualArt.Media.Dto;
 using VisualArt.Media.Util;
@@ -30,12 +29,12 @@ namespace VisualArt.Media.Services
         {
             var safePath = ValidatePath(path);
             var di = new DirectoryInfo(Path.Combine(RootPath, safePath));
-            if( di.Exists == false)
+            if (di.Exists == false)
             {
                 return Enumerable.Empty<FileMetadata>();
             }
-            return di.GetDirectories().Where(d=>d.Name != HashesFolder)
-                .Select( d=> FileMetadata.Create(d))
+            return di.GetDirectories().Where(d => d.Name != HashesFolder)
+                .Select(d => FileMetadata.Create(d))
                 .Concat(di.GetFiles().Select(fi => FileMetadata.Create(fi)));
         }
         public async Task<FileMetadata> SaveFileAsync(string path, string fileName, Stream stream)
@@ -112,7 +111,7 @@ namespace VisualArt.Media.Services
             return File.Exists(path) && hash == File.ReadAllText(path);
         }
 
-        void EnsureValidFileType( string extension )
+        void EnsureValidFileType(string extension)
         {
             if (_options.BlockedExtensions.Contains(extension.ToLower()))
             {
@@ -140,10 +139,10 @@ namespace VisualArt.Media.Services
         {
             private string _rootPath = Path.Combine(Path.GetTempPath(), "VisualArt.Media");
             public const string SectionName = "FileStorage";
-            public string RootPath 
-            { 
-                get { return _rootPath; } 
-                set { _rootPath = Environment.ExpandEnvironmentVariables(value); } 
+            public string RootPath
+            {
+                get { return _rootPath; }
+                set { _rootPath = Environment.ExpandEnvironmentVariables(value); }
             }
             public long MaxFileSize { get; set; } = 500 * 1024 * 1024;
             public uint MaxFolderDepth { get; set; } = 16;
