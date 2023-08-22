@@ -17,10 +17,10 @@ namespace VisualArt.Media.Controllers
             _fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
         }
 
-        public IEnumerable<FileMetadata> ListFiles(string path, uint? start, uint? count)
+        public IEnumerable<FileMetadata> ListFiles(string path, uint start, uint count)
         {
             var decodedPath = WebUtility.UrlDecode(path);
-            return _fileStorage.ListFiles(decodedPath).Skip((int)(start ?? 0)).Take((int)(count ?? int.MaxValue));
+            return _fileStorage.ListFiles(decodedPath).Skip((int)start).Take((int)count);
         }
 
         public async IAsyncEnumerable<FileMetadata> UploadFiles(string path, IFormFileCollection files)

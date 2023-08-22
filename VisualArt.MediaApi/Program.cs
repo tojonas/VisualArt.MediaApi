@@ -51,7 +51,7 @@ namespace VisualArt.MediaApi
 
             app.MapGet("/api/media/metadata/{*path}", 
                 ([FromServices] MediaApiController mediaController, string? path, uint? start, uint? count) => 
-                    mediaController.ListFiles(path ?? "", start, count));
+                    mediaController.ListFiles(path ?? "", start ?? 0, count ?? int.MaxValue));
 
             app.Run();
         }
