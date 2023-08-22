@@ -14,6 +14,7 @@ namespace VisualArt.Media.Services
         private const string HashesFolder = ".hashes";
         private readonly ILogger _logger;
         private readonly Options _options = new();
+        private readonly PathUtil _pathUtil;
         private string RootPath => _options.RootPath;
         public long MaxFileSize => _options.MaxFileSize;
 
@@ -22,24 +23,11 @@ namespace VisualArt.Media.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options.Value ?? throw new ArgumentNullException(nameof(options));
 
+            _pathUtil = new PathUtil(new[] { HashesFolder }, _options.MaxFolderDepth);
             _logger.LogInformation($"RootPath: [{RootPath}] MaxFileSize: [{MaxFileSize}]");
             EnsureDirectories(RootPath);
         }
-        string EnsureDirectories( string folder )
-        {
-            if (!Directory.Exists(folder))
-            {
-                Directory.CreateDirectory(folder);
-                _logger.LogInformation($"Created RootPath: [{folder}]");
-            }
-            var hashes = Path.Combine(folder, HashesFolder);
-            if (!Directory.Exists(hashes))
-            {
-                Directory.CreateDirectory(hashes);
-                _logger.LogInformation($"Created HashesFolder: [{hashes}]");
-            }
-            return folder;
-        }
+
         public IEnumerable<FileMetadata> ListFiles(string path)
         {
             var safePath = ValidatePath(path);
@@ -52,12 +40,6 @@ namespace VisualArt.Media.Services
                 .Select( d=> FileMetadata.Create(d))
                 .Concat(di.GetFiles().Select(fi => FileMetadata.Create(fi)));
         }
-
-        public bool FileExistsInStore(string path, string hash)
-        {
-            return File.Exists(path) && hash == File.ReadAllText(path);
-        }
-
         public async Task<FileMetadata> SaveFileAsync(string path, string fileName, Stream stream)
         {
             _ = fileName ?? throw new ArgumentNullException(nameof(fileName));
@@ -109,6 +91,29 @@ namespace VisualArt.Media.Services
             }
             return FileMetadata.Create(storagePath);
         }
+
+        string ValidatePath(string path) => _pathUtil.ValidatePath(path);
+        string ValidateName(string fileName) => _pathUtil.ValidateName(fileName);
+        string EnsureDirectories(string folder)
+        {
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+                _logger.LogInformation($"Created RootPath: [{folder}]");
+            }
+            var hashes = Path.Combine(folder, HashesFolder);
+            if (!Directory.Exists(hashes))
+            {
+                Directory.CreateDirectory(hashes);
+                _logger.LogInformation($"Created HashesFolder: [{hashes}]");
+            }
+            return folder;
+        }
+        public bool FileExistsInStore(string path, string hash)
+        {
+            return File.Exists(path) && hash == File.ReadAllText(path);
+        }
+
         void EnsureValidFileType( string extension )
         {
             if (_options.BlockedExtensions.Contains(extension.ToLower()))
@@ -116,43 +121,6 @@ namespace VisualArt.Media.Services
                 throw new ArgumentException($"File extension [{extension}] is not allowed");
             }
         }
-        public string ValidatePath(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return string.Empty;
-            }
-            if (path.IndexOfAny(_invalidChars) >= 0)
-            {
-                throw new ArgumentException($"Invalid path: {path}");
-            }
-            var parts = new List<string>(path.Split("/"));
-            if (parts.Count > _options.MaxFolderDepth)
-            {
-                throw new ArgumentException($"Invalid path: {path}");
-            }
-            foreach (var part in parts)
-            {
-                if (part == HashesFolder || string.IsNullOrWhiteSpace(part) || part == "." || part == "..")
-                {
-                    throw new ArgumentException($"Invalid path: {path}");
-                }
-            }
-            return Path.Combine(parts.ToArray());
-        }
-        public string ValidateName(string fileName)
-        {
-            if (fileName == HashesFolder || string.IsNullOrWhiteSpace(fileName))
-            {
-                throw new ArgumentException($"Invalid file name: {fileName}");
-            }
-            if (fileName.IndexOfAny(_invalidChars) >= 0)
-            {
-                throw new ArgumentException($"Invalid file name: {fileName}");
-            }
-            return SafeFileName.MakeSafe(fileName);
-        }
-
 
         public static string CalculateHash(Stream stream)
         {
@@ -180,7 +148,7 @@ namespace VisualArt.Media.Services
                 set { _rootPath = Environment.ExpandEnvironmentVariables(value); } 
             }
             public long MaxFileSize { get; set; } = 500 * 1024 * 1024;
-            public long MaxFolderDepth { get; set; } = 16;
+            public uint MaxFolderDepth { get; set; } = 16;
             public HashSet<string> BlockedExtensions { get; set; } = new();
         }
     }
