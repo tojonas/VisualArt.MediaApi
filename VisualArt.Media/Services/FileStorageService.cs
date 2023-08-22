@@ -55,7 +55,7 @@ namespace VisualArt.Media.Services
             var storagePath = Path.Combine(saveDirectory, safeFilename);
 
             var hash = CalculateHash(stream);
-            var hashPath = Path.Combine(saveDirectory, HashesFolder, safeFilename);
+            var hashPath = Path.Combine(saveDirectory, HashesFolder, $"{safeFilename}.txt");
 
             if (FileExistsInStore(hashPath, hash))
             {
