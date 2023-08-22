@@ -127,9 +127,9 @@ namespace VisualArt.Media.IntegrationTest
             // Arrange
             var client = CreateInjectedClient();
             var content = new MultipartFormDataContent();
-            foreach (var file in _samples)
+            foreach (var (name, _) in _samples)
             {
-                content.Add(new StreamContent(FileUtil.OpenRead($"StoreFiles/{file.name}")), "files", file.name);
+                content.Add(new StreamContent(FileUtil.OpenRead($"StoreFiles/{name}")), "files", name);
             }
 
             // Act
@@ -155,9 +155,9 @@ namespace VisualArt.Media.IntegrationTest
             // Arrange
             var client = CreateInjectedClient();
             var content = new MultipartFormDataContent();
-            foreach (var file in _samples)
+            foreach (var (name, _) in _samples)
             {
-                content.Add(new StreamContent(FileUtil.OpenRead($"StoreFiles/{file.name}")), "files", file.name);
+                content.Add(new StreamContent(FileUtil.OpenRead($"StoreFiles/{name}")), "files", name);
             }
 
             // Act
@@ -190,9 +190,9 @@ namespace VisualArt.Media.IntegrationTest
             // Arrange
             var client = CreateInjectedClient();
             var content = new MultipartFormDataContent();
-            foreach (var file in _samples)
+            foreach (var (name, _) in _samples)
             {
-                content.Add(new StreamContent(FileUtil.OpenRead($"StoreFiles/{file.name}")), "files", file.name);
+                content.Add(new StreamContent(FileUtil.OpenRead($"StoreFiles/{name}")), "files", name);
             }
 
             // Act
@@ -225,9 +225,9 @@ namespace VisualArt.Media.IntegrationTest
             // Arrange
             var client = CreateInjectedClient();
             var content = new MultipartFormDataContent();
-            foreach (var file in _samples)
+            foreach (var (name, _) in _samples)
             {
-                content.Add(new StreamContent(FileUtil.OpenRead($"StoreFiles/{file.name}")), "files", file.name);
+                content.Add(new StreamContent(FileUtil.OpenRead($"StoreFiles/{name}")), "files", name);
             }
 
             var folders = new List<string> { "", "/level1", "/level1/level2", "/level1/level2/level3" };
@@ -313,9 +313,9 @@ namespace VisualArt.Media.IntegrationTest
                 {
                     content.Add(new StreamContent(f), "files", "large-dummy-file.txt");
 
-                    foreach (var file in _samples)
+                    foreach (var (name, size) in _samples)
                     {
-                        content.Add(new StreamContent(FileUtil.OpenRead($"StoreFiles/{file.name}")), "files", file.name);
+                        content.Add(new StreamContent(FileUtil.OpenRead($"StoreFiles/{name}")), "files", name);
                     }
 
                     // Act

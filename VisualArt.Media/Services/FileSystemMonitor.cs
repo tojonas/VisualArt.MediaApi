@@ -8,7 +8,7 @@ namespace VisualArt.Media.Services
     {
         private readonly ILogger _logger;
         private readonly FileStorageService.Options _options;
-        FileSystemWatcher _monitor;
+        private readonly FileSystemWatcher _monitor;
 
         public FileSystemMonitor(ILogger<FileSystemMonitor> logger, IOptions<FileStorageService.Options> options)
         {
@@ -17,18 +17,19 @@ namespace VisualArt.Media.Services
 
             // There is a dependency on FileStorageService to ensure the root path exists.
             // For now, we'll just use the same path and ensure it exists.
-            var rootPath = _options.ExpandedRootPath;
+            var rootPath = _options.RootPath;
             EnsureDirectories(rootPath);
-            _monitor = new FileSystemWatcher(rootPath);
-
-            _monitor.NotifyFilter = NotifyFilters.Attributes
+            _monitor = new(rootPath)
+            {
+                NotifyFilter = NotifyFilters.Attributes
                                  | NotifyFilters.CreationTime
                                  | NotifyFilters.DirectoryName
                                  | NotifyFilters.FileName
                                  | NotifyFilters.LastAccess
                                  | NotifyFilters.LastWrite
                                  | NotifyFilters.Security
-                                 | NotifyFilters.Size;
+                                 | NotifyFilters.Size
+            };
 
             _monitor.Changed += OnChanged;
             _monitor.Created += (object sender, FileSystemEventArgs e) => _logger.LogInformation($"Created: {e.FullPath}");

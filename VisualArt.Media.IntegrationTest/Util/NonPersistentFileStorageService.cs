@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VisualArt.Media.Dto;
+﻿using VisualArt.Media.Dto;
 using VisualArt.Media.Services;
 
 namespace VisualArt.Media.IntegrationTest.Util
 {
     public class NonPersistentFileStorageService : IFileStorage, IDisposable
     {
-        FileStorageService _service;
+        private readonly FileStorageService _service;
         public NonPersistentFileStorageService(FileStorageService service)
         {
             _service = service;

@@ -12,9 +12,9 @@ namespace VisualArt.Media.Services
         private readonly char[] _invalidChars = new List<char>(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())).ToArray();
 
         private const string HashesFolder = ".hashes";
-        private readonly string _rootPath;
         private readonly ILogger _logger;
         private readonly Options _options = new();
+        private string RootPath => _options.RootPath;
         public long MaxFileSize => _options.MaxFileSize;
 
         public FileStorageService(ILogger<FileStorageService> logger, IOptions<Options> options)
@@ -22,10 +22,8 @@ namespace VisualArt.Media.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options.Value ?? throw new ArgumentNullException(nameof(options));
 
-            _rootPath = _options.ExpandedRootPath;
-
-            _logger.LogInformation($"RootPath: [{_rootPath}] MaxFileSize: [{MaxFileSize}]");
-            EnsureDirectories(_rootPath);
+            _logger.LogInformation($"RootPath: [{RootPath}] MaxFileSize: [{MaxFileSize}]");
+            EnsureDirectories(RootPath);
         }
         string EnsureDirectories( string folder )
         {
@@ -45,7 +43,7 @@ namespace VisualArt.Media.Services
         public IEnumerable<FileMetadata> ListFiles(string path)
         {
             var safePath = ValidatePath(path);
-            var di = new DirectoryInfo(Path.Combine(_rootPath, safePath));
+            var di = new DirectoryInfo(Path.Combine(RootPath, safePath));
             if( di.Exists == false)
             {
                 return Enumerable.Empty<FileMetadata>();
@@ -72,7 +70,7 @@ namespace VisualArt.Media.Services
             }
             EnsureValidFileType(Path.GetExtension(fileName));
 
-            var saveDirectory = EnsureDirectories(Path.Combine(_rootPath, ValidatePath(path)));
+            var saveDirectory = EnsureDirectories(Path.Combine(RootPath, ValidatePath(path)));
 
             var safeFilename = ValidateName(fileName);
             var storagePath = Path.Combine(saveDirectory, safeFilename);
@@ -179,18 +177,22 @@ namespace VisualArt.Media.Services
 
         public void DropStorage()
         {
-            _logger.LogInformation($"Dropping Storage: {_rootPath}");
-            Directory.Delete(_rootPath, true);
-            EnsureDirectories(_rootPath);
+            _logger.LogInformation($"Dropping Storage: {RootPath}");
+            Directory.Delete(RootPath, true);
+            EnsureDirectories(RootPath);
         }
         public class Options
         {
+            private string _rootPath = Path.Combine(Path.GetTempPath(), "VisualArt.Media");
             public const string SectionName = "FileStorage";
-            public string RootPath { get; set; } = Path.Combine(Path.GetTempPath(), "VisualArt.Media");
+            public string RootPath 
+            { 
+                get { return _rootPath; } 
+                set { _rootPath = Environment.ExpandEnvironmentVariables(value); } 
+            }
             public long MaxFileSize { get; set; } = 500 * 1024 * 1024;
             public long MaxFolderDepth { get; set; } = 16;
             public HashSet<string> BlockedExtensions { get; set; } = new();
-            public string ExpandedRootPath => Environment.ExpandEnvironmentVariables(RootPath);
         }
     }
 }
