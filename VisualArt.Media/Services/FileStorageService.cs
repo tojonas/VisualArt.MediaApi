@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.IO;
 using System.Security.Cryptography;
 using VisualArt.Media.Dto;
 using VisualArt.Media.Util;
@@ -8,6 +9,8 @@ namespace VisualArt.Media.Services
 {
     public class FileStorageService : IFileStorage
     {
+        char[] _invalidChars = new List<char>(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())).ToArray();
+
         private const string HashesFolder = ".hashes";
         private readonly string _rootPath;
         private readonly ILogger _logger;
@@ -121,7 +124,7 @@ namespace VisualArt.Media.Services
             {
                 return string.Empty;
             }
-            if (path.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+            if (path.IndexOfAny(_invalidChars) >= 0)
             {
                 throw new ArgumentException($"Invalid path: {path}");
             }
@@ -142,6 +145,10 @@ namespace VisualArt.Media.Services
         public string ValidateName(string fileName)
         {
             if (fileName == HashesFolder || string.IsNullOrWhiteSpace(fileName))
+            {
+                throw new ArgumentException($"Invalid file name: {fileName}");
+            }
+            if (fileName.IndexOfAny(_invalidChars) >= 0)
             {
                 throw new ArgumentException($"Invalid file name: {fileName}");
             }
