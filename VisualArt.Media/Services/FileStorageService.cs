@@ -54,10 +54,10 @@ namespace VisualArt.Media.Services
             var safeFilename = ValidateName(fileName);
             var storagePath = Path.Combine(saveDirectory, safeFilename);
 
-            var hash = CalculateHash(stream);
+            var hash = await CalculateHashAsync(stream);
             var hashPath = Path.Combine(saveDirectory, HashesFolder, $"{safeFilename}.txt");
 
-            if (FileExistsInStore(hashPath, hash))
+            if ( await FileExistsInStoreAsync(hashPath, hash))
             {
                 _logger.LogInformation($"File [{safeFilename}] already exists: {hashPath}");
             }
@@ -74,7 +74,7 @@ namespace VisualArt.Media.Services
                         }
                         // Use a lock to prevent multiple threads from writing to the same file
                         File.Move(tempPath, storagePath, true);
-                        File.WriteAllText(hashPath, hash);
+                        await File.WriteAllTextAsync(hashPath, hash);
 
                         _logger.LogInformation($"Saved file: {storagePath}");
                         tx.Commit();
@@ -106,9 +106,9 @@ namespace VisualArt.Media.Services
             }
             return folder;
         }
-        public bool FileExistsInStore(string path, string hash)
+        async Task<bool> FileExistsInStoreAsync(string path, string hash)
         {
-            return File.Exists(path) && hash == File.ReadAllText(path);
+            return File.Exists(path) && hash == await File.ReadAllTextAsync(path);
         }
 
         void EnsureValidFileType(string extension)
@@ -119,11 +119,11 @@ namespace VisualArt.Media.Services
             }
         }
 
-        public static string CalculateHash(Stream stream)
+        static async Task<string> CalculateHashAsync(Stream stream)
         {
-            using (SHA1 sha1 = SHA1.Create())
+            using (var sha1 = SHA1.Create())
             {
-                byte[] hashBytes = sha1.ComputeHash(stream);
+                byte[] hashBytes = await sha1.ComputeHashAsync(stream);
                 stream.Seek(0, SeekOrigin.Begin);
                 return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
             }
