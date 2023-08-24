@@ -29,6 +29,7 @@ namespace VisualArt.Media.Services
         {
             var safePath = ValidatePath(path);
             var di = new DirectoryInfo(Path.Combine(RootPath, safePath));
+
             if (di.Exists == false)
             {
                 return Enumerable.Empty<FileMetadata>();
@@ -54,10 +55,12 @@ namespace VisualArt.Media.Services
             var safeFilename = ValidateName(fileName);
             var storagePath = Path.Combine(saveDirectory, safeFilename);
 
+            EnsurePathLength(storagePath);
+
             var hash = await CalculateHashAsync(stream);
             var hashPath = Path.Combine(saveDirectory, HashesFolder, $"{safeFilename}.txt");
 
-            if ( await FileExistsInStoreAsync(hashPath, hash))
+            if (await FileExistsInStoreAsync(hashPath, hash))
             {
                 _logger.LogInformation($"File [{safeFilename}] already exists: {hashPath}");
             }
@@ -93,6 +96,7 @@ namespace VisualArt.Media.Services
         string ValidateName(string fileName) => _pathUtil.ValidateName(fileName);
         string EnsureDirectories(string folder)
         {
+            EnsurePathLength(folder);
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -105,6 +109,13 @@ namespace VisualArt.Media.Services
                 _logger.LogInformation($"Created HashesFolder: [{hashes}]");
             }
             return folder;
+        }
+        void EnsurePathLength(string path)
+        {
+            if (path.Length > _options.MaxPathLength)
+            {
+                throw new PathTooLongException($"Path too long {path.Length}>{_options.MaxPathLength} {path}");
+            }
         }
         async Task<bool> FileExistsInStoreAsync(string path, string hash)
         {
@@ -147,6 +158,7 @@ namespace VisualArt.Media.Services
             }
             public long MaxFileSize { get; set; } = 500 * 1024 * 1024;
             public uint MaxFolderDepth { get; set; } = 16;
+            public uint MaxPathLength { get; set; } = 260;
             public HashSet<string> BlockedExtensions { get; set; } = new();
         }
     }
