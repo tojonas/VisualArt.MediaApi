@@ -53,13 +53,10 @@ namespace VisualArt.Media.Services
             var saveDirectory = EnsureDirectories(Path.Combine(RootPath, ValidatePath(path)));
 
             var safeFilename = ValidateName(fileName);
-            var storagePath = Path.Combine(saveDirectory, safeFilename);
-
-            EnsurePathLength(storagePath);
+            var storagePath = EnsurePathLength(Path.Combine(saveDirectory, safeFilename));
+            var hashPath = EnsurePathLength(Path.Combine(saveDirectory, HashesFolder, $"{safeFilename}.txt"));
 
             var hash = await CalculateHashAsync(stream);
-            var hashPath = Path.Combine(saveDirectory, HashesFolder, $"{safeFilename}.txt");
-
             if (await FileExistsInStoreAsync(hashPath, hash))
             {
                 _logger.LogInformation($"File [{safeFilename}] already exists: {hashPath}");
@@ -110,12 +107,13 @@ namespace VisualArt.Media.Services
             }
             return folder;
         }
-        void EnsurePathLength(string path)
+        string EnsurePathLength(string path)
         {
             if (path.Length > _options.MaxPathLength)
             {
                 throw new PathTooLongException($"Path too long {path.Length}>{_options.MaxPathLength} {path}");
             }
+            return path;
         }
         async Task<bool> FileExistsInStoreAsync(string path, string hash)
         {
