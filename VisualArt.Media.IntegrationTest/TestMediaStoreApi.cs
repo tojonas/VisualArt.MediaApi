@@ -113,9 +113,9 @@ namespace VisualArt.Media.IntegrationTest
             var content = new MultipartFormDataContent();
             var file = FileUtil.OpenRead($"StoreFiles/{_samples[0].name}");
             content.Add(new StreamContent(file), "files", _samples[0].name);
-            var folderName = new string('a', 512);
+
             // Act
-            var response = await client.PostAsync($"/api/media/{folderName}", content);
+            var response = await client.PostAsync($"/api/media/{new string('a', 512)}", content);
 
             // Assert
             Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
