@@ -21,6 +21,7 @@ namespace VisualArt.Media.Configuration
 
                         switch (exception)
                         {
+                            case PathTooLongException:
                             case ArgumentException:
                                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                                 break;

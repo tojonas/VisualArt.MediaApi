@@ -106,6 +106,21 @@ namespace VisualArt.Media.IntegrationTest
         }
 
         [Fact]
+        public async Task TryingToSaveFileAtLevelWithTooLongFolderName_ReturnsBadRequest()
+        {
+            // Arrange
+            var client = CreateInjectedClient();
+            var content = new MultipartFormDataContent();
+            var file = FileUtil.OpenRead($"StoreFiles/{_samples[0].name}");
+            content.Add(new StreamContent(file), "files", _samples[0].name);
+
+            // Act
+            var response = await client.PostAsync($"/api/media/{new string('a', 512)}", content);
+
+            // Assert
+            Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        }
+        [Fact]
         public async Task TryingToListFiles20LevelsDeep_ReturnsBadRequest()
         {
             // Arrange
